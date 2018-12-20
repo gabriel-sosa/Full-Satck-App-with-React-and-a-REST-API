@@ -33,18 +33,18 @@ class UserSignIn extends Component {
 
 	render(){
 
-		let error;
-		if (this.state.error)
-			error = (
-				<div>
-          <h2 className="validation--errors--label">Validation errors</h2>
-          <div className="validation-errors">
-            <ul>
-              <li>{this.state.error}</li>
-            </ul>
-          </div>
+	let error;
+	if (this.state.error)
+		error = (
+			<div>
+        <h2 className="validation--errors--label">Validation errors</h2>
+        <div className="validation-errors">
+          <ul>
+            <li>{this.state.error}</li>
+          </ul>
         </div>
-      );
+      </div>
+    );
 		
 		if (this.state.loading)
 			return (<h3>Loading...</h3>);

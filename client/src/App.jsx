@@ -27,8 +27,8 @@ class App extends Component {
     currentUser: {}
   }
 
-  setCurrentUser = info => {
-    this.setState({currentUser: info}, () => localStorage.setItem( 'currentUser', JSON.stringify(info)));
+  setCurrentUser = UserAuthInfo => {
+    this.setState({currentUser: UserAuthInfo}, () => localStorage.setItem( 'currentUser', JSON.stringify(UserAuthInfo)));
   }
 
   componentDidMount(){
@@ -44,7 +44,7 @@ class App extends Component {
           <Switch>
             <Route exact path='/' render={() => (<Courses />)} />
             <Route exact path='/signin' render={({history}) => (<UserSignIn setUser={this.setCurrentUser} history={history} />)} />
-            <Route exact path='/signup' render={() => (<UserSignUp />)} />
+            <Route exact path='/signup' render={({history}) => (<UserSignUp history={history} />)} />
             <Route exact path='/signout' render={() => (<UserSignOut />)} />
             <Route exact path='/courses/create' render={() => (<CreateCourse />)} />
             <Route exact path="/courses/:courseId" render={({match}) => (<CourseDetail courseId={match.params.courseId} />)} />
