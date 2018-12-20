@@ -3,18 +3,6 @@ import React, { Component } from 'react';
 
 class CourseDetail extends Component {
 
-	state = {
-		course: {}
-	}
-
-	componentDidMount() {
-    fetch('http://localhost:5000/api/courses/57029ed4795118be119cc441')
-      .then(data => data.json())
-      .then(data => this.setState({course: data}))
-      //.then(() => console.log(this.state.course))
-      .catch(err => console.log(err));
-  }
-
 	render(){
 		return (
 			<div className="bounds course--detail">
