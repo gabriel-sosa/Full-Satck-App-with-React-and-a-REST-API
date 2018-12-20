@@ -14,6 +14,7 @@ import CreateCourse from './components/CreateCourse.jsx';
 import UserSignIn from './components/UserSignIn.jsx';
 import UserSignUp from './components/UserSignUp.jsx';
 import UpdateCourse from './components/UpdateCourse.jsx';
+import UserSignOut from './components/UserSignOut.jsx';
 
 import NotFound from './components/NotFound.jsx';
 
@@ -22,17 +23,29 @@ import './global.css';
 
 class App extends Component {
 
+  state = {
+    currentUser: {}
+  }
+
+  setCurrentUser = info => {
+    this.setState({currentUser: info}, () => localStorage.setItem( 'currentUser', JSON.stringify(info)));
+  }
+
+  componentDidMount(){
+    this.setState({currentUser: JSON.parse(localStorage.getItem('currentUser')) || {}});
+  }
+
   render() {
     return (
       <BrowserRouter>
         <div>
-          <Header />
+          <Header currentUser={this.state.currentUser} />
           <hr/>
           <Switch>
             <Route exact path='/' render={() => (<Courses />)} />
-            <Route exact path='/signin' render={() => (<UserSignIn />)} />
+            <Route exact path='/signin' render={({history}) => (<UserSignIn setUser={this.setCurrentUser} history={history} />)} />
             <Route exact path='/signup' render={() => (<UserSignUp />)} />
-            <Route exact path='/signout' render={() => (<h3>On work</h3>)} />
+            <Route exact path='/signout' render={() => (<UserSignOut />)} />
             <Route exact path='/courses/create' render={() => (<CreateCourse />)} />
             <Route exact path="/courses/:courseId" render={({match}) => (<CourseDetail courseId={match.params.courseId} />)} />
             <Route exact path="/courses/:courseId/update" render={({match}) => (<UpdateCourse courseId={match.params.courseId} />)} />
