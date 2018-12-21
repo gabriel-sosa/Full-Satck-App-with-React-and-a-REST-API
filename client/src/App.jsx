@@ -3,7 +3,8 @@ import React, { Component } from 'react';
 import {
   BrowserRouter,
   Route,
-  Switch
+  Switch,
+  Redirect
 } from 'react-router-dom';
 
 //Import my components
@@ -17,6 +18,8 @@ import UpdateCourse from './components/UpdateCourse.jsx';
 import UserSignOut from './components/UserSignOut.jsx';
 
 import NotFound from './components/NotFound.jsx';
+import Forbidden from './components/Forbidden.jsx';
+import UnhandledError from './components/UnhandledError.jsx';
 
 //Import stylesheet
 import './global.css';
@@ -24,7 +27,7 @@ import './global.css';
 class App extends Component {
 
   state = {
-    currentUser: {}
+    currentUser: JSON.parse(localStorage.getItem('currentUser')) || false
   }
 
   setCurrentUser = UserAuthInfo => {
@@ -32,7 +35,7 @@ class App extends Component {
   }
 
   componentDidMount(){
-    this.setState({currentUser: JSON.parse(localStorage.getItem('currentUser')) || {}});
+    this.setState({currentUser: JSON.parse(localStorage.getItem('currentUser')) || false});
   }
 
   render() {
@@ -46,10 +49,13 @@ class App extends Component {
             <Route exact path='/signin' render={({history}) => (<UserSignIn setUser={this.setCurrentUser} history={history} />)} />
             <Route exact path='/signup' render={({history}) => (<UserSignUp history={history} />)} />
             <Route exact path='/signout' render={() => (<UserSignOut />)} />
-            <Route exact path='/courses/create' render={() => (<CreateCourse />)} />
-            <Route exact path="/courses/:courseId" render={({match}) => (<CourseDetail courseId={match.params.courseId} />)} />
-            <Route exact path="/courses/:courseId/update" render={({match}) => (<UpdateCourse courseId={match.params.courseId} />)} />
-            <Route render={() => (<NotFound />)} />
+            <Route exact path='/courses/create' render={({history}) => (this.state.currentUser ? <CreateCourse history={history} currentUser={this.state.currentUser} /> : <Redirect to='/signin' />)} />
+            <Route exact path="/courses/:courseId" render={({match, history}) => (<CourseDetail courseId={match.params.courseId} history={history} currentUser={this.state.currentUser} />)} />
+            <Route exact path="/courses/:courseId/update" render={({match, history}) => (<UpdateCourse courseId={match.params.courseId} history={history} currentUser={this.state.currentUser} />)} />
+            <Route exact path="/forbidden" render={() => (<Forbidden />)} />
+            <Route exact path="/error" render={() => (<UnhandledError />)} />
+            <Route exact path="/notfound" render={() => (<NotFound />)} />
+            <Route render={() => (<Redirect to='/notfound' />)} />
           </Switch>
         </div>
       </BrowserRouter>

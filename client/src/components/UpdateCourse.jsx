@@ -25,9 +25,59 @@ class UpdateCourse extends Component {
 	componentDidMount() {
     this.setState({loading: true});
     fetch(`http://localhost:5000/api/courses/${this.props.courseId}`)
-      .then(data => data.json())
-      .then(data => this.setState({course: data, loading: false}))
-      .catch(err => console.log(err));
+      .then(data => {
+        if (data.ok)
+          return data.json();
+        else
+          throw new Error('course not found')
+      })
+      .then(course => {
+        if (course.user.emailAddress === this.props.currentUser.email)
+          this.setState({allowAuthorAccess: true})
+        return course;
+      })
+      .then(course => {
+        if (course.user.emailAddress === this.props.currentUser.email)
+          return course;
+        else 
+          throw new Error('course forbidden');
+      })
+      .then(course => this.setState({course: course, loading: false}))
+      .catch(err => {
+        if (err.message === 'course not found')
+          this.props.history.push('/notfound');
+        else if (err.message === 'course forbidden')
+          this.props.history.push('/forbidden');
+        else
+          this.props.history.push('/error');
+      });
+  }
+
+  handleSubmit = event => {
+    event.preventDefault();
+    const body = {
+      title: this.state.course.title,
+      description: this.state.course.description,
+      estimatedTime: this.state.course.estimatedTime,
+      materialsNeeded: this.state.course.estimatedTime
+    };
+    const info = {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...this.props.currentUser.auth
+      },
+      body: JSON.stringify(body)
+    };
+    fetch(`http://localhost:5000/api/courses/${this.props.courseId}`, info)
+      .then(data => data.ok ? false : data.json())
+      .then(error => {
+        if (error)
+          throw error;
+        else
+          this.props.history.push(`/courses/${this.props.courseId}`);
+      })
+      .catch(err => this.setState({error: err.message}));
   }
 
 	render(){
@@ -40,7 +90,7 @@ class UpdateCourse extends Component {
     			<div className="bounds course--detail">
             <h1>Update Course</h1>
             <div>
-              <form>
+              <form onSubmit={this.handleSubmit}>
                 <div className="grid-66">
                   <div className="course--header">
                     <h4 className="course--label">Course</h4>

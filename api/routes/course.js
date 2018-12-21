@@ -23,10 +23,15 @@ router.get('/:id', (req, res, next) => {
 	//find and send the requested course
 	Course
 		.findById(req.params.id)
-		.populate('user', 'firstName lastName')
+		.orFail(new Error('not found'))
+		.populate('user', 'firstName lastName emailAddress')
 		.exec()
 		.then(course => res.status(200).json(course))
-		.catch(err => next(err));
+		.catch(err => {
+			if (err.message === 'not found')
+				err.status = 404;
+			next(err)
+		});
 });
 
 // api/courses POST route

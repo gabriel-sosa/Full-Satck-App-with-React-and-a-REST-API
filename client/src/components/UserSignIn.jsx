@@ -20,11 +20,11 @@ class UserSignIn extends Component {
 		fetch('http://localhost:5000/api/users', info)
 			.then(data => {
 				if (data.ok)
-					return;
+					return data.json();
 				else
 					throw new Error('user or password are incorrect');
 			})
-			.then(() => this.props.setUser(info.headers))
+			.then(user => this.props.setUser({auth: info.headers, name: `${user.firstName} ${user.lastName}`, email: user.emailAddress}))
 			.then(() => this.props.history.push('/'))
 			.catch(err => {
 				this.setState({loading: false, error: err.message});

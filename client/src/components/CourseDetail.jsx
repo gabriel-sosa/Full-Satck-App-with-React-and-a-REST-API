@@ -8,15 +8,46 @@ class CourseDetail extends Component {
 
 	state = {
 		course: {},
-    loading: true
+    loading: true,
+    allowAuthorAccess: false
 	}
 
 	componentDidMount() {
     this.setState({loading: true});
     fetch(`http://localhost:5000/api/courses/${this.props.courseId}`)
-      .then(data => data.json())
-      .then(data => this.setState({course: data, loading: false}))
-      .catch(err => console.log(err));
+      .then(data => {
+        if (data.ok)
+          return data.json();
+        else
+          throw new Error('course not found')
+      })
+      .then(course => {
+        if (course.user.emailAddress === this.props.currentUser.email)
+          this.setState({allowAuthorAccess: true})
+        return course;
+      })
+      .then(course => this.setState({course: course, loading: false}))
+      .catch(err => {
+        if (err.message === 'course not found')
+          this.props.history.push('/notfound');
+        else
+          this.props.history.push('/error');
+      });
+  }
+
+  handleCourseDelete = () => {
+    const info = {
+      method: 'DELETE',
+      headers: this.props.currentUser.auth
+    }
+    fetch(`http://localhost:5000/api/courses/${this.props.courseId}`, info)
+      .then(data => {
+        if (data.ok) 
+          this.props.history.push('/');
+        else
+          throw new Error();
+      })
+      .catch(err => alert('course could not be deleted'));
   }
 
 	render(){
@@ -25,7 +56,7 @@ class CourseDetail extends Component {
     else
   		return (
         <div>
-          <ActionBar courseId={this.props.courseId} />
+          <ActionBar courseId={this.props.courseId} showUpdateandDeleteButtons={this.state.allowAuthorAccess} handleDelete={this.handleCourseDelete}/>
     			<div className="bounds course--detail">
             <div className="grid-66">
               <div className="course--header">
