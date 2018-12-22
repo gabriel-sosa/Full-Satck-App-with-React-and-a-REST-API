@@ -7,8 +7,12 @@ import ActionBar from './ActionsBar.jsx'
 class UpdateCourse extends Component {
 
 	state = {
+    //currently displayed course
 		course: {},
-    loading: true
+    //variable to handle wheter the data is still loading
+    loading: true,
+    //variable to save any errors returned by the server
+    error: ''
 	}
 
   handleInputChange = event => {
@@ -24,25 +28,25 @@ class UpdateCourse extends Component {
 
 	componentDidMount() {
     this.setState({loading: true});
+    //fetch call to the course GET route
     fetch(`http://localhost:5000/api/courses/${this.props.courseId}`)
+      //if the server status is ok continues else throws an error
       .then(data => {
         if (data.ok)
           return data.json();
         else
-          throw new Error('course not found')
+          throw new Error('course not found');
       })
-      .then(course => {
-        if (course.user.emailAddress === this.props.currentUser.email)
-          this.setState({allowAuthorAccess: true})
-        return course;
-      })
+      //check if the current user is the creator
       .then(course => {
         if (course.user.emailAddress === this.props.currentUser.email)
           return course;
         else 
           throw new Error('course forbidden');
       })
+      //save course in the the state and finish loading
       .then(course => this.setState({course: course, loading: false}))
+      //handle the error
       .catch(err => {
         if (err.message === 'course not found')
           this.props.history.push('/notfound');
@@ -69,18 +73,37 @@ class UpdateCourse extends Component {
       },
       body: JSON.stringify(body)
     };
+    this.setState({loading: true});
+    //fetch call to the course PUT route
     fetch(`http://localhost:5000/api/courses/${this.props.courseId}`, info)
+      //return the data if the server status is not ok
       .then(data => data.ok ? false : data.json())
+      // if there is an error is thrown to the error handler else the user is redirected to the course detail page
       .then(error => {
         if (error)
           throw error;
         else
           this.props.history.push(`/courses/${this.props.courseId}`);
       })
-      .catch(err => this.setState({error: err.message}));
+      //display the errors to the user
+      .catch(err => this.setState({error: err.message, loading: false}));
   }
 
 	render(){
+
+    //display the error if there is any
+    const error = this.state.error ? (
+      <div>
+        <h2 className="validation--errors--label">Validation errors</h2>
+        <div className="validation-errors">
+          <ul>
+            <li>{this.state.error}</li>
+          </ul>
+        </div>
+      </div>
+    ) : undefined;
+
+    //once the data has finished loading the course is displayed
     if (this.state.loading)
       return (<h3>Loading...</h3>);
     else
@@ -90,6 +113,7 @@ class UpdateCourse extends Component {
     			<div className="bounds course--detail">
             <h1>Update Course</h1>
             <div>
+              {error}
               <form onSubmit={this.handleSubmit}>
                 <div className="grid-66">
                   <div className="course--header">

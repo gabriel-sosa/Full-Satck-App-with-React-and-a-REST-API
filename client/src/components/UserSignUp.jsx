@@ -4,8 +4,15 @@ import React, { Component } from 'react';
 class UserSignIn extends Component {
   
   state = {
-    error: '',
-    loading: false
+    //variable to handle wheter the data is still loading
+    loading: false,
+    //variable to save any errors returned by the server
+    error: ''
+  }
+
+  componentDidMount(){
+    if (this.props.currentUser)
+      this.props.history.push('/');
   }
 
   handleSubmit = e => {
@@ -15,27 +22,37 @@ class UserSignIn extends Component {
       emailAddress: this.emailAddress.value,
       password: this.password.value
     });
+    const info = {
+      method: 'POST', 
+      body: body, 
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    };
     e.preventDefault();
+    //fetch call to the user POST route only if both passwords match
     if (this.password.value === this.password2.value){
       this.setState({loading: true});
-      fetch('http://localhost:5000/api/users', {method: 'POST', body: body, headers: {'Content-Type': 'application/json'}})
-        .then(data => data.ok ? 'user created' : data.json())
-        .then(data => {
-          if (data === 'user created')
-            return;
+      fetch('http://localhost:5000/api/users', info)
+        //return the data if the server status is not ok
+        .then(data => data.ok ? false : data.json())
+        // if there is an error is thrown to the error handler else the user is redirected to the '/signin' route
+        .then(error => {
+          if (error)
+            throw error;
           else
-            throw data;
+            this.props.history.push('/signin');
         })
-        .then(() => this.props.history.push('/signin'))
+        //display the errors to the user
         .catch(err => this.setState({error: err.message, loading: false}));
-    }
+    } else
+      this.setState({error: `passwords don't match`});
   }
 
 	render(){
 
-  let error;
-  if (this.state.error)
-    error = (
+  //display the error if there is any
+  const error = this.state.error ? (
       <div>
         <h2 className="validation--errors--label">Validation errors</h2>
         <div className="validation-errors">
@@ -44,9 +61,9 @@ class UserSignIn extends Component {
           </ul>
         </div>
       </div>
-    );
+    ) : undefined;
 
-
+    //once the data has finished loading the data is displayed
     if (this.state.loading)
       return (<h3>Loading...</h3>);
     else

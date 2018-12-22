@@ -4,19 +4,23 @@ import React, { Component } from 'react';
 class Courses extends Component {
 
 	state = {
+		//courses array
 		courses: [],
+		//variable to handle wheter the data is still loading
 		loading: true
 	}
 
 	componentDidMount() {
 		this.setState({loading: true});
+		//fetch call to the courses GET route
     fetch('http://localhost:5000/api/courses')
       .then(data => data.json())
       .then(data => this.setState({courses: data, loading: false}))
-      .catch(err => console.log(err));
+      .catch(err => this.props.history.push('/error'));
   }
     
 	render(){
+		//once the data has finished loading the course is displayed
 		if (this.state.loading)
 			return (<h3>Loading...</h3>);
 		else

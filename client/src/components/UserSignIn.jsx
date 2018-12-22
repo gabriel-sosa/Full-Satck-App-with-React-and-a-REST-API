@@ -4,7 +4,9 @@ import React, { Component } from 'react';
 class UserSignIn extends Component {
 
 	state = {
+		//variable to handle wheter the data is still loading
 		loading: false,
+		//variable to save any errors returned by the server
 		error: ''
 	}
 
@@ -17,15 +19,20 @@ class UserSignIn extends Component {
 				Authorization: authorization
 			}
 		};
+		//fetch call to the user GET route
 		fetch('http://localhost:5000/api/users', info)
+			//if the server status is ok continues else throws an error
 			.then(data => {
 				if (data.ok)
 					return data.json();
 				else
-					throw new Error('user or password are incorrect');
+					throw new Error('wrong email or password');
 			})
+			//save the current user
 			.then(user => this.props.setUser({auth: info.headers, name: `${user.firstName} ${user.lastName}`, email: user.emailAddress}))
-			.then(() => this.props.history.push('/'))
+			//return to the previous page
+			.then(() => this.props.history.goBack())
+			//display the errors to the user
 			.catch(err => {
 				this.setState({loading: false, error: err.message});
 			});
@@ -33,9 +40,8 @@ class UserSignIn extends Component {
 
 	render(){
 
-	let error;
-	if (this.state.error)
-		error = (
+		//display the error if there is any
+		const error = this.state.error ?(
 			<div>
         <h2 className="validation--errors--label">Validation errors</h2>
         <div className="validation-errors">
@@ -44,8 +50,9 @@ class UserSignIn extends Component {
           </ul>
         </div>
       </div>
-    );
+    ) : undefined;
 		
+		//once the data has finished loading the data is displayed
 		if (this.state.loading)
 			return (<h3>Loading...</h3>);
 		else

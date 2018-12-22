@@ -1,5 +1,6 @@
 //Import react and react components
 import React, { Component } from 'react';
+import ReactMarkdown from 'react-markdown';
 
 //Import my components
 import ActionBar from './ActionsBar.jsx'
@@ -7,26 +8,34 @@ import ActionBar from './ActionsBar.jsx'
 class CourseDetail extends Component {
 
 	state = {
+    //currently displayed course
 		course: {},
+    //variable to handle wheter the data is still loading
     loading: true,
+    //variable to handle if the current user is the creator of the course
     allowAuthorAccess: false
 	}
 
 	componentDidMount() {
     this.setState({loading: true});
+    //fetch call to the course GET route
     fetch(`http://localhost:5000/api/courses/${this.props.courseId}`)
+      //if the server status is ok continues else throws an error
       .then(data => {
         if (data.ok)
           return data.json();
         else
           throw new Error('course not found')
       })
+      //check if the current user is the creator
       .then(course => {
         if (course.user.emailAddress === this.props.currentUser.email)
           this.setState({allowAuthorAccess: true})
         return course;
       })
+      //save course in the the state and finish loading
       .then(course => this.setState({course: course, loading: false}))
+      //handle the error
       .catch(err => {
         if (err.message === 'course not found')
           this.props.history.push('/notfound');
@@ -40,17 +49,21 @@ class CourseDetail extends Component {
       method: 'DELETE',
       headers: this.props.currentUser.auth
     }
+    //fetch call to the course DELETE route
     fetch(`http://localhost:5000/api/courses/${this.props.courseId}`, info)
+      //if the server status is ok and redirects to the '/' courses routes else throws an error
       .then(data => {
         if (data.ok) 
           this.props.history.push('/');
         else
           throw new Error();
       })
+      //handle the error
       .catch(err => alert('course could not be deleted'));
   }
 
 	render(){
+    //once the data has finished loading the course is displayed
     if (this.state.loading)
       return(<h3>loading</h3>);
     else
@@ -65,7 +78,7 @@ class CourseDetail extends Component {
                 <p>By {this.state.course.user.firstName} {this.state.course.user.lastName}</p>
               </div>
               <div className="course--description">
-                <p>{this.state.course.description}</p>
+                <ReactMarkdown source={this.state.course.description} />
               </div>
             </div>
             <div className="grid-25 grid-right">
@@ -77,9 +90,7 @@ class CourseDetail extends Component {
                   </li>
                   <li className="course--stats--list--item">
                     <h4>Materials Needed</h4>
-                    <ul>
-                      <li>{this.state.course.materialsNeeded}</li>
-                    </ul>
+                    <ReactMarkdown source={this.state.course.materialsNeeded} />
                   </li>
                 </ul>
               </div>

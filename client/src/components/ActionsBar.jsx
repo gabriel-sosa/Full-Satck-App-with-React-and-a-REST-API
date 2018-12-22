@@ -1,6 +1,8 @@
+//import react
 import React from 'react';
 
 export default ({courseId, showUpdateandDeleteButtons, handleDelete}) => {
+  //if the user created the course the update and delete buttons will be displayed
   const buttons = showUpdateandDeleteButtons ? (
       <span>
         <a className="button" href={`/courses/${courseId}/update`}>Update Course</a>

@@ -16,24 +16,24 @@ import UserSignIn from './components/UserSignIn.jsx';
 import UserSignUp from './components/UserSignUp.jsx';
 import UpdateCourse from './components/UpdateCourse.jsx';
 import UserSignOut from './components/UserSignOut.jsx';
-
+//import error handling components
 import NotFound from './components/NotFound.jsx';
 import Forbidden from './components/Forbidden.jsx';
 import UnhandledError from './components/UnhandledError.jsx';
 
-//Import stylesheet
-import './global.css';
-
 class App extends Component {
 
   state = {
+    //checks the current user saved in the local storage
     currentUser: JSON.parse(localStorage.getItem('currentUser')) || false
   }
 
+  //function to save the current user in the app state and in local storage
   setCurrentUser = UserAuthInfo => {
     this.setState({currentUser: UserAuthInfo}, () => localStorage.setItem( 'currentUser', JSON.stringify(UserAuthInfo)));
   }
 
+  //retrieve the saved user if there is any
   componentDidMount(){
     this.setState({currentUser: JSON.parse(localStorage.getItem('currentUser')) || false});
   }
@@ -42,20 +42,43 @@ class App extends Component {
     return (
       <BrowserRouter>
         <div>
+          {/*Header component were sign in, sign up and sign out links are displayed*/}
           <Header currentUser={this.state.currentUser} />
           <hr/>
           <Switch>
-            <Route exact path='/' render={() => (<Courses />)} />
+            {/*'/' index route, shows all the courses*/}
+            <Route exact path='/' render={({history}) => (<Courses history={history} />)} />
+
+            {/*sign in route*/}
             <Route exact path='/signin' render={({history}) => (<UserSignIn setUser={this.setCurrentUser} history={history} />)} />
-            <Route exact path='/signup' render={({history}) => (<UserSignUp history={history} />)} />
+
+            {/*sign up route*/}
+            <Route exact path='/signup' render={({history}) => (<UserSignUp history={history} currentUser={this.state.currentUser} />)} />
+
+            {/*sign out route*/}
             <Route exact path='/signout' render={() => (<UserSignOut />)} />
+
+            {/*create course route, only available if there is a current user, else redirects to the sign in page*/}
             <Route exact path='/courses/create' render={({history}) => (this.state.currentUser ? <CreateCourse history={history} currentUser={this.state.currentUser} /> : <Redirect to='/signin' />)} />
+
+            {/*course details route, if the current user is the creator will show the update and delete course button*/}
             <Route exact path="/courses/:courseId" render={({match, history}) => (<CourseDetail courseId={match.params.courseId} history={history} currentUser={this.state.currentUser} />)} />
+
+            {/*update course route, only available if the current user is the creator*/}
             <Route exact path="/courses/:courseId/update" render={({match, history}) => (<UpdateCourse courseId={match.params.courseId} history={history} currentUser={this.state.currentUser} />)} />
+
+            {/*forbidden route, if the user tries to access to the update route of a course they did not create, the user will be redirected to this route*/}
             <Route exact path="/forbidden" render={() => (<Forbidden />)} />
+
+            {/*error route, if the server returns any unexpected errors the user will be redirected to this page*/}
             <Route exact path="/error" render={() => (<UnhandledError />)} />
+
+            {/*not found route, if the server can't find the requested course, the user will be redirected to this page*/}
             <Route exact path="/notfound" render={() => (<NotFound />)} />
+
+            {/*default route, redirects to the not found route*/}
             <Route render={() => (<Redirect to='/notfound' />)} />
+
           </Switch>
         </div>
       </BrowserRouter>
