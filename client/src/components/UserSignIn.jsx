@@ -13,7 +13,9 @@ class UserSignIn extends Component {
 	handleSubmit = event => {
 		this.setState({loading: true})
 		event.preventDefault();
-		const authorization = 'Basic ' + btoa(`${this.email.value}:${this.password.value}`);
+		const email = this.email.value;
+		const password = this.password.value
+		const authorization = 'Basic ' + btoa(`${email}:${password}`);
 		const info = {
 			headers: {
 				Authorization: authorization
@@ -29,7 +31,7 @@ class UserSignIn extends Component {
 					throw new Error('wrong email or password');
 			})
 			//save the current user
-			.then(user => this.props.setUser({auth: info.headers, name: `${user.firstName} ${user.lastName}`, email: user.emailAddress}))
+			.then(user => this.props.signIn(`${user.firstName} ${user.lastName}`, user.emailAddress, password))
 			//return to the previous page
 			.then(() => this.props.history.goBack())
 			//display the errors to the user

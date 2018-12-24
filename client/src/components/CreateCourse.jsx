@@ -16,7 +16,7 @@ class CourseDetail extends Component {
       title: this.title.value,
       description: this.description.value,
       estimatedTime: this.estimatedTime.value,
-      materialsNeeded: this.estimatedTime.value
+      materialsNeeded: this.materialsNeeded.value
     };
     const info = {
       method: 'POST',

@@ -16,6 +16,11 @@ class UserSignIn extends Component {
   }
 
   handleSubmit = e => {
+    const user = {
+      name: `${this.firstName.value} ${this.lastName.value}`,
+      email: this.emailAddress.value,
+      password: this.password.value
+    }
     const body = JSON.stringify({
       firstName: this.firstName.value,
       lastName: this.lastName.value,
@@ -41,8 +46,9 @@ class UserSignIn extends Component {
           if (error)
             throw error;
           else
-            this.props.history.push('/signin');
+            this.props.signIn(user.name, user.email, user.password);
         })
+        .then(() => this.props.history.push('/'))
         //display the errors to the user
         .catch(err => this.setState({error: err.message, loading: false}));
     } else

@@ -63,7 +63,7 @@ class UpdateCourse extends Component {
       title: this.state.course.title,
       description: this.state.course.description,
       estimatedTime: this.state.course.estimatedTime,
-      materialsNeeded: this.state.course.estimatedTime
+      materialsNeeded: this.state.course.materialsNeeded
     };
     const info = {
       method: 'PUT',

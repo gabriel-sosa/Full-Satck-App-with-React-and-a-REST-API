@@ -16,6 +16,7 @@ import UserSignIn from './components/UserSignIn.jsx';
 import UserSignUp from './components/UserSignUp.jsx';
 import UpdateCourse from './components/UpdateCourse.jsx';
 import UserSignOut from './components/UserSignOut.jsx';
+import PrivateRoute from './components/PrivateRoute.jsx';
 //import error handling components
 import NotFound from './components/NotFound.jsx';
 import Forbidden from './components/Forbidden.jsx';
@@ -29,8 +30,15 @@ class App extends Component {
   }
 
   //function to save the current user in the app state and in local storage
-  setCurrentUser = UserAuthInfo => {
-    this.setState({currentUser: UserAuthInfo}, () => localStorage.setItem( 'currentUser', JSON.stringify(UserAuthInfo)));
+  signIn = (name, email, password) => {
+    const info = {
+      name: name,
+      email: email,
+      auth: {
+        Authorization: 'Basic ' + btoa(`${email}:${password}`)
+      }
+    };
+    this.setState({currentUser: info}, () => localStorage.setItem( 'currentUser', JSON.stringify(info)));
   }
 
   //retrieve the saved user if there is any
@@ -50,22 +58,22 @@ class App extends Component {
             <Route exact path='/' render={({history}) => (<Courses history={history} />)} />
 
             {/*sign in route*/}
-            <Route exact path='/signin' render={({history}) => (<UserSignIn setUser={this.setCurrentUser} history={history} />)} />
+            <Route exact path='/signin' render={({history}) => (<UserSignIn signIn={this.signIn} history={history} />)} />
 
             {/*sign up route*/}
-            <Route exact path='/signup' render={({history}) => (<UserSignUp history={history} currentUser={this.state.currentUser} />)} />
+            <Route exact path='/signup' render={({history}) => (<UserSignUp signIn={this.signIn} history={history} currentUser={this.state.currentUser} />)} />
 
             {/*sign out route*/}
             <Route exact path='/signout' render={() => (<UserSignOut />)} />
 
             {/*create course route, only available if there is a current user, else redirects to the sign in page*/}
-            <Route exact path='/courses/create' render={({history}) => (this.state.currentUser ? <CreateCourse history={history} currentUser={this.state.currentUser} /> : <Redirect to='/signin' />)} />
+            <PrivateRoute exact path='/courses/create' currentUser={this.state.currentUser} render={({history}) => (<CreateCourse history={history} currentUser={this.state.currentUser} />)} />
 
             {/*course details route, if the current user is the creator will show the update and delete course button*/}
             <Route exact path="/courses/:courseId" render={({match, history}) => (<CourseDetail courseId={match.params.courseId} history={history} currentUser={this.state.currentUser} />)} />
 
             {/*update course route, only available if the current user is the creator*/}
-            <Route exact path="/courses/:courseId/update" render={({match, history}) => (<UpdateCourse courseId={match.params.courseId} history={history} currentUser={this.state.currentUser} />)} />
+            <PrivateRoute exact path="/courses/:courseId/update" currentUser={this.state.currentUser} render={({match, history}) => (<UpdateCourse courseId={match.params.courseId} history={history} currentUser={this.state.currentUser} />)} />
 
             {/*forbidden route, if the user tries to access to the update route of a course they did not create, the user will be redirected to this route*/}
             <Route exact path="/forbidden" render={() => (<Forbidden />)} />
